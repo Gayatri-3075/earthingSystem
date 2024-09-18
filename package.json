@@ -7,8 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "pocketbase": ".\\pocketbase.exe serve",
-    "devPocketbase": "concurrently --kill-others-on-fail \"pnpm pocketbase\" \"pnpm dev\"",
+    "pocketbase": ".\\pocketbase serve",
+    "pocketbase-dev": ".\\pocketbase.exe dev",
+    "devPocketbase": "concurrently --kill-others-on-fail \"pnpm pocketbase-dev\" \"pnpm dev\"",
     "startPocketbase": "concurrently --kill-others-on-fail \"pnpm pocketbase\" \"pnpm start\""
   },
   "dependencies": {
