@@ -6,12 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "pocketbase": ".\\pocketbase.exe serve",
+    "devPocketbase": "concurrently --kill-others-on-fail \"pnpm pocketbase\" \"pnpm dev\"",
+    "startPocketbase": "concurrently --kill-others-on-fail \"pnpm pocketbase\" \"pnpm start\""
   },
   "dependencies": {
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.12"
+    "next": "14.2.12",
+    "pocketbase": "^0.21.4",
+    "concurrently": "^8.2.2"
   },
   "devDependencies": {
     "postcss": "^8",
