@@ -19,7 +19,7 @@
 # misc
 .DS_Store
 *.pem
-pocketbase.exe
+pocketbase
 
 # debug
 npm-debug.log*
