@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import PocketBase from "pocketbase";
-import { config } from "dotenv";
 
-config();
 const pb = new PocketBase(process.env.dbip);
 
 export async function GET(request, { params }) {

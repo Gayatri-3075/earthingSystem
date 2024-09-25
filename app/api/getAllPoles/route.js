@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import PocketBase from "pocketbase";
-import { config } from "dotenv";
 
-config();
 const pb = new PocketBase(process.env.dbip);
 const POLES_COLLECTION = "Poles"; // Use a constant for collection name
 

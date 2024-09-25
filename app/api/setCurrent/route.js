@@ -1,7 +1,7 @@
+import { getidbyPoleid } from "@/components/utils/utils";
 import { NextResponse } from "next/server";
 import PocketBase from "pocketbase";
-import { config } from "dotenv";
-config();
+
 
 const pb = new PocketBase(process.env.dbip);
 const POLES_COLLECTION = "Poles"; // Use constant for collection name
@@ -9,8 +9,7 @@ const POLES_COLLECTION = "Poles"; // Use constant for collection name
 export async function POST(request) {
   try {
     // Parse incoming request data
-    const { pid, leakage: leakage } = await request.json();
-
+    const { pid, leakage, critical = false} = await request.json();
     // Validate inputs
     if (!pid || typeof leakage === "undefined") {
       return NextResponse.json(
@@ -20,19 +19,26 @@ export async function POST(request) {
     }
 
     // Fetch the first record with matching poleid
-    let record = await pb
-      .collection(POLES_COLLECTION)
-      .getFirstListItem(`poleid="${pid}"`);
+    let recordid = await getidbyPoleid(pid);
 
-    // Return early if the pole is not found
-    if (!record) {
-      return NextResponse.json({ message: "Pole not found" }, { status: 404 });
-    }
+    // Patch it to relation db
+    const timeDbRecord = await pb.collection('leakagePoleData').create(
+        {
+          time: new Date(),
+          current: Number(Number(leakage).toFixed(2)),
+          critical: critical,
+          pole: recordid,
+        }
+    )
 
-    // Update the record with the new danger level
+    // Patch the record with the new danger level
     const updatedRecord = await pb
       .collection(POLES_COLLECTION)
-      .update(record.id, { leakage: Number(leakage)});
+      .update(recordid, { "leakage": Number(Number(leakage).toFixed(2)),
+        "leakageDB+": [timeDbRecord.id],
+        "critical": critical
+      },
+    );
 
     return NextResponse.json(updatedRecord);
   } catch (error) {

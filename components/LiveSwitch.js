@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import PocketBase from "pocketbase";
-import { config } from "dotenv";
-config();
+
 
 const pb = new PocketBase("http://localhost:8090");
 
