@@ -32,10 +32,17 @@ const MapComponent = () => {
     markers.length > 0 ? markers[0].coordinates : { lat: 0, lng: 0 };
 
   // Define your icon URLs here
+    // const icons = {
+  //   critical: "https://maps.google.com/mapfiles/ms/icons/red-dot.png", // Example critical icon
+  //   warning: "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png", // Example warning icon
+  //   normal: "https://maps.google.com/mapfiles/ms/icons/green-dot.png", // Example normal icon
+  // };
+
+
   const icons = {
-    critical: "https://maps.google.com/mapfiles/ms/icons/red-dot.png", // Example critical icon
-    warning: "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png", // Example warning icon
-    normal: "https://maps.google.com/mapfiles/ms/icons/green-dot.png", // Example normal icon
+    critical: "/icons/pole_red.png", // Example critical icon
+    warning: "/icons/pole_yellow.png", // Example warning icon
+    normal: "/icons/pole_green.png", // Example normal icon
   };
 
   /**
