@@ -27,6 +27,7 @@ const useLeakageData = (poleid="PID1") => {
   );
 
   useEffect(() => {
+    let recordid;
     const initialize = async () => {
     // Subscribe to real-time updates on the "Poles" collection
       console.log("async useEffect");
@@ -35,7 +36,7 @@ const useLeakageData = (poleid="PID1") => {
         setLeakageData(records);
         initialized = true;
       }
-      const recordid = await getidbyPoleid(poleid); 
+      recordid = await getidbyPoleid(poleid); 
       pb.collection("Poles").subscribe(recordid, (e) => {
         if (e.action === "update") {
           console.log("update", e.record.poleid, e.record.leakage);

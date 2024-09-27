@@ -1,100 +1,197 @@
 "use client";
-import React from "react";
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import {
+  LineChart,
+  Line,
+  LineProps,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
-  LineChart,
-  Line,
 } from "recharts";
-import "./styles.css";
-import useLeakageData from "./utils/useLeakageData";
+import { useZoomAndPan } from "../hooks/useZoomAndPan";
+import { useTooltipSorting } from "../hooks/useTooltipSorter";
 
+const DEFAULT_CHART_PROPS = {
+  width: 500,
+  height: 400,
+  margin: {
+    top: 25,
+    right: 10,
+    left: 10,
+    bottom: 0,
+  },
+};
 
-const LiveChart = ({ wrapperClassName = "bar-graph-wrapper" }) => {
-  const data = useLeakageData("PID1");
-  console.log(data);
-  const width = data.length * 100 < 400 ? 400 : data.length * 100;
+const DEFAULT_GRID_PROPS = {
+  strokeDasharray: "3 3",
+};
+
+const RechartsClipPaths = forwardRef((_, ref) => {
+  const grid = useRef(null);
+  const axis = useRef(null);
+  useImperativeHandle(ref, () => ({
+    grid,
+    axis,
+  }));
+
   return (
-    <div className="app-container">
-      <div
-        className={`overflow-x-auto overflow-y-hidden ${wrapperClassName}`}
-        onScroll={(e) => {
-          let wrapper = document.querySelector(
-            `.${wrapperClassName} .recharts-surface`
-          );
-          let graphWrapper = document.querySelector(
-            `.${wrapperClassName} .graph-wrapper`
-          );
+    <>
+      <clipPath id="chart-xaxis-clip">
+        <rect fill="rgba(0,0,0,0)" height="100%" ref={axis} />
+      </clipPath>
+      <clipPath id="chart-grid-clip">
+        <rect fill="rgba(0,0,0,0)" height="100%" ref={grid} />
+      </clipPath>
+    </>
+  );
+});
 
-          const allAxis = document.querySelectorAll(
-            `.${wrapperClassName} .recharts-yAxis`
-          );
+const lines = [
+  {
+    dataKey: "impression",
+    strokeWidth: 1,
+    name: "impression",
+    stroke: "green",
+    connectNulls: true,
+  },
+  {
+    dataKey: "cost",
+    strokeWidth: 1,
+    name: "impression",
+    stroke: "blue",
+    connectNulls: true,
+  },
+];
 
-          let xAxis = document.querySelector(
-            `.${wrapperClassName} .recharts-xAxis`
-          );
+const axis = {
+  x: {
+    dataKey: "name",
+    type: "category",
+    allowDataOverflow: true,
+    interval: 0,
+  },
+};
 
-          const xAxisHeight = xAxis.getBoundingClientRect().height;
 
-          allAxis?.forEach((axis) => {
-            const orientation = axis
-              .querySelector(
-                `.${wrapperClassName} .recharts-cartesian-axis-tick-line`
-              )
-              ?.getAttribute("orientation");
+const data = [
+  { name: "A", cost: 25.5, impression: 100 },
+  { name: "B", cost: 25.39, impression: 120 },
+  { name: "C", cost: 18.37, impression: 150 },
+  { name: "D", cost: 18.16, impression: 180 },
+  { name: "E", cost: 26.29, impression: 200 },
+  { name: "F", cost: 39, impression: 499 },
+  { name: "G", cost: 50.53, impression: 50 },
+  { name: "H", cost: 82.52, impression: 100 },
+  { name: "I", cost: 91.79, impression: 200 },
+  { name: "J", cost: 52.94, impression: 222 },
+  { name: "K", cost: 84.3, impression: 210 },
+  { name: "L", cost: 54.41, impression: 300 },
+  { name: "M", cost: 2.1, impression: 50 },
+  { name: "N", cost: 58, impression: 190 },
+  { name: "O", cost: 20, impression: 300 },
+  { name: "P", cost: 19, impression: 400 },
+  { name: "Q", cost: 36, impression: 200 },
+  { name: "R", cost: 92, impression: 50 },
+  { name: "S", cost: 83, impression: 100 },
+  { name: "T", cost: 78, impression: 100 },
+];
 
-            const rect = document.createElementNS(
-              "http://www.w3.org/2000/svg",
-              "rect"
-            );
-            const yAxisheight = axis.getBoundingClientRect().height;
-            const yAxisWidth = axis.getBoundingClientRect().width;
+const Chart = ({
+  chartOptions,
+  gridOptions,
+  tooltip,
+  legend,
+}) => {
+  const [loaded, setLoaded] = useState(false);
 
-            rect.setAttribute("x", "0");
-            rect.setAttribute("y", "0");
-            rect.setAttribute("width", yAxisWidth);
-            rect.setAttribute("height", yAxisheight + xAxisHeight);
-            rect.setAttribute("fill", "white");
-            rect.setAttribute("class", `y-axis-rect-${orientation}`);
+  const {
+    clipPathRefs,
+    xPadding,
+    onChartMouseDown,
+    onChartMouseUp,
+    setWrapperRef,
+    onChartMouseMove,
+  } = useZoomAndPan({
+    chartLoaded: loaded,
+  });
 
-            axis.insertBefore(rect, axis.firstChild);
+  const { onSeriesMouseOver, tooltipSorter } = useTooltipSorting();
 
-            const position =
-              orientation === "left"
-                ? e.target.scrollLeft
-                : e.target.scrollLeft -
-                  wrapper?.clientWidth +
-                  graphWrapper?.clientWidth;
+  useEffect(() => {
+    setTimeout(() => {
+      setLoaded(true);
+    }, 100);
+  }, []);
 
-            axis.style = "transform: translateX(" + position + "px);";
-          });
+  return (
+    <ResponsiveContainer
+      className="noselect"
+      width="100%"
+      height="100%"
+      debounce={100}
+      ref={setWrapperRef}
+    >
+      <LineChart
+        {...{
+          ...DEFAULT_CHART_PROPS,
+          margin: {
+            ...DEFAULT_CHART_PROPS.margin,
+            ...chartOptions?.margin,
+          },
         }}
+        data={data}
+        onMouseMove={onChartMouseMove}
+        onMouseDown={onChartMouseDown}
+        onMouseUp={onChartMouseUp}
       >
-        <LineChart
-          width={width}
-          height={300}
-          data={data}
-          margin={{
-            top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
+        <defs>
+          <RechartsClipPaths ref={clipPathRefs} />
+        </defs>
+        <CartesianGrid
+          {...{
+            ...DEFAULT_GRID_PROPS,
+            ...gridOptions,
+            stroke: gridOptions?.hide ? "transparent" : gridOptions?.stroke,
           }}
-        >
-          <XAxis dataKey="time" />
-
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="current" stroke="#8884d8" activeDot={{ r: 8 }} />
-          <YAxis  />
-        </LineChart>
-      </div>
-    </div>
+        />
+        {axis?.x?.hide ? null : (
+          <XAxis
+            {...axis?.x}
+            padding={{ left: xPadding[0], right: xPadding[1] }}
+            domain={["dataMin", "dataMax"]}
+            className="x-axis"
+          />
+        )}
+        {axis?.y?.hide ? null : <YAxis {...axis?.y} />}
+        {tooltip?.hide ? null : (
+          <Tooltip {...tooltip} itemSorter={tooltipSorter} />
+        )}
+        {legend?.hide ? null : <Legend {...legend} />}
+        {lines.map((l, i) => (
+          <Line
+            key={`${l.key}-${i}`}
+            id={l.key}
+            {...l}
+            className={`${l.className || ""}`}
+            activeDot={{
+              onMouseOver: () => onSeriesMouseOver(String(l.dataKey)),
+            }}
+            onMouseOver={() => onSeriesMouseOver(String(l.dataKey))}
+          />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
   );
 };
 
-export default LiveChart;
+export default Chart;

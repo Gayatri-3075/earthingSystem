@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { FaMoon, FaSun } from "react-icons/fa"; // Import icons
 
 const navItems = [
   {
@@ -24,40 +25,69 @@ const navItems = [
   },
 ];
 
-//ToDO 
-//add icons
-// fix framer motion going off the screen and flashing scollbar for a second.
+// ToDo
+// add icons
+// fix framer motion going off the screen and flashing scrollbar for a second.
 
 export function NavBar() {
-  let pathname = usePathname() || "/";
+  const pathname = usePathname() || "/";
 
-  if (pathname.includes("/writing/")) {
-    pathname = "/writing";
-  }
+  const normalizedPathname = pathname.includes("/writing/")
+    ? "/writing"
+    : pathname;
 
-  const [hoveredPath, setHoveredPath] = useState(pathname);
+  const [hoveredPath, setHoveredPath] = useState(normalizedPathname);
+
+  // Theme state: true for light mode, false for dark mode
+  const [isLightMode, setIsLightMode] = useState(true);
+
+  // Toggle theme function
+  const toggleTheme = () => {
+    setIsLightMode((prevMode) => !prevMode);
+  };
+
+  // Define theme-based classes
+  const containerClasses = isLightMode
+    ? "border border-gray-200 bg-white/80 backdrop-blur-md"
+    : "border border-stone-800/90 bg-stone-900/80 backdrop-blur-md";
+
+  const navClasses =
+    "flex gap-2 relative w-full z-[100] rounded-lg justify-evenly items-center";
+
+  const linkBaseClasses =
+    "px-4 py-2 rounded-md text-sm lg:text-base relative no-underline duration-300 ease-in";
+
+  const getLinkClasses = (isActive) => {
+    if (isLightMode) {
+      return isActive ? "text-black" : "text-gray-600";
+    } else {
+      return isActive ? "text-zinc-100" : "text-zinc-400";
+    }
+  };
+
+  const overlayClasses = isLightMode ? "bg-gray-200/80" : "bg-stone-800/80";
 
   return (
-    <div className="border border-stone-800/90 p-[0.4rem] rounded-lg mb-12 sticky top-4 z-[100] bg-stone-900/80 backdrop-blur-md ml-4 mr-4 py-2">
-      <nav className="flex gap-2 relative w-full z-[100] rounded-lg justify-evenly">
-        {navItems.map((item, index) => {
-          const isActive = item.path === pathname;
+    <div
+      className={`${containerClasses} p-[0.4rem] rounded-lg mb-12 sticky top-4 z-[100] ml-4 mr-4 flex`}
+    >
+      <nav className={navClasses}>
+        {navItems.map((item) => {
+          const isActive = item.path === normalizedPathname;
 
           return (
             <Link
               key={item.path}
-              className={`px-4 py-2 rounded-md text-sm lg:text-base relative no-underline duration-300 ease-in ${
-                isActive ? "text-zinc-100" : "text-zinc-400"
-              }`}
-              data-active={isActive}
               href={item.path}
+              className={`${linkBaseClasses} ${getLinkClasses(isActive)}`}
+              data-active={isActive}
               onMouseOver={() => setHoveredPath(item.path)}
-              onMouseLeave={() => setHoveredPath(pathname)}
+              onMouseLeave={() => setHoveredPath(normalizedPathname)}
             >
-              <div className="px-28">{item.name}</div>
+              <div>{item.name}</div>
               {item.path === hoveredPath && (
                 <motion.div
-                  className="absolute bottom-0 left-0 h-full bg-stone-800/80 rounded-md -z-10"
+                  className={`absolute bottom-0 left-0 h-full rounded-md -z-10 ${overlayClasses}`}
                   layoutId="navbar"
                   aria-hidden="true"
                   style={{
@@ -75,7 +105,19 @@ export function NavBar() {
             </Link>
           );
         })}
+        {/* Theme Toggle Icon */}
       </nav>
+      <button
+        onClick={toggleTheme}
+        className={`${linkBaseClasses} ${getLinkClasses(
+          false
+        )} flex items-center self-end`}
+        aria-label={
+          isLightMode ? "Switch to dark mode" : "Switch to light mode"
+        }
+      >
+        {isLightMode ? <FaMoon size={18} /> : <FaSun size={18} />}
+      </button>
     </div>
   );
 }

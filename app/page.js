@@ -20,12 +20,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MapProvider } from "@/components/utils/context";
 import { NavigateTo } from "@/components/NavigateTo";
+import Chart from "@/components/LiveCharts";
 
 
 config();
 const pb = new PocketBase(process.env.dbip);
 
-const areas = [
+const warnAreas = [
   {
     areaName: "Chandni Chowk",
     polesInDanger: 3,
@@ -64,6 +65,48 @@ const areas = [
   }
 ];
 
+const critAreas = [
+  {
+    areaName: "Mehrauli",
+    polesInDanger: 4,
+    poles: [
+      { number: 120, coordinates: { lat: 28.5204, lng: 77.1835 } },
+      { number: 121, coordinates: { lat: 28.5245, lng: 77.1856 } },
+      { number: 122 },
+      { number: 123 },
+    ],
+  },
+  {
+    areaName: "Rajouri Garden",
+    polesInDanger: 3,
+    poles: [
+      { number: 220 },
+      { number: 221 },
+      { number: 222, coordinates: { lat: 28.6423, lng: 77.1167 } },
+    ],
+  },
+  {
+    areaName: "Pitampura",
+    polesInDanger: 2,
+    poles: [
+      { number: 320 },
+      { number: 321, coordinates: { lat: 28.7033, lng: 77.1325 } },
+    ],
+  },
+  {
+    areaName: "Kalkaji",
+    polesInDanger: 5,
+    poles: [
+      { number: 420 },
+      { number: 421 },
+      { number: 422 },
+      { number: 423 },
+      { number: 424, coordinates: { lat: 28.5446, lng: 77.2616 } },
+    ],
+  },
+];
+
+
 const AccordionItemComponent = ({ areaName, polesInDanger, children }) => (
   <AccordionItem value={areaName.toLowerCase().replace(/\s+/g, "-")} className="pl-3">
     <AccordionTrigger>
@@ -87,7 +130,14 @@ export default function Home() {
       <MapProvider>
         <Card className="text-left overflow-y-scroll h-full w-full justify-self-start scroll-smooth scroll-w-thin max-h-[25rem]">
           <CardHeader>
-            <CardTitle className="text-lg font-bold items-center text-2xl">
+            <CardTitle className="text-lg font-bold text-2xl flex ">
+              <Image
+                src="/icons/warn.webp"
+                width={30}
+                height={20}
+                alt="Critical"
+                className="relative -translate-y-1"
+              />
               Significant Leakages
             </CardTitle>
             <CardDescription className="text-sm text-gray-500">
@@ -110,7 +160,7 @@ export default function Home() {
           </CardHeader>
           <CardContent className="px-5">
             <Accordion type="single" collapsible className="w-full mt-[-2rem]">
-              {areas.map((area) => (
+              {warnAreas.map((area) => (
                 <AccordionItemComponent
                   key={area.areaName}
                   areaName={area.areaName}
@@ -137,11 +187,18 @@ export default function Home() {
 
         <Card className="text-left overflow-y-scroll h-full w-full justify-self-start scroll-smooth scroll-w-thin max-h-[22rem] self-start">
           <CardHeader>
-            <CardTitle className="text-lg font-bold items-center text-2xl">
+            <CardTitle className="text-lg font-bold text-2xl flex ">
+              <Image
+                src="/icons/crit.webp"
+                width={30}
+                height={20}
+                alt="Critical"
+                className="relative -translate-y-1"
+              />
               Poles Offline
             </CardTitle>
             <CardDescription className="text-sm text-gray-500">
-              Areas with significant power loss due to pole leakages
+              Poles smartly switched off due to leakage current.
             </CardDescription>
             <HoverCard>
               <HoverCardTrigger asChild>
@@ -151,16 +208,13 @@ export default function Home() {
                 </Avatar>
               </HoverCardTrigger>
               <HoverCardContent>
-                These poles are potentially dangerous to nearby people and have
-                abnormal amount of leakage. These poles have been specifically
-                flagged by the our ml model that has analyzed thier leakage
-                current data over a period of time.
+                These poles have been shutdown by the rccb due to poor earthing and unsafe leakage.
               </HoverCardContent>
             </HoverCard>
           </CardHeader>
           <CardContent className="px-5">
             <Accordion type="single" collapsible className="w-full mt-[-2rem]">
-              {areas.map((area) => (
+              {critAreas.map((area) => (
                 <AccordionItemComponent
                   key={area.areaName}
                   areaName={area.areaName}
@@ -181,8 +235,8 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        <div className="">
-          <BoringLeakageChart />
+        <div className="w-[57rem] h-96 self-start relative bottom-3 right-3">
+          <Chart />
         </div>
       </MapProvider>
     </div>
