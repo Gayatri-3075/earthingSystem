@@ -6,6 +6,17 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+.mapgrid {
+  grid-template-columns: minmax(20rem, 4fr) minmax(20rem, 5fr); /* Two columns with different fractions and minimum percentage width */
+  grid-template-rows: minmax(20rem, 4fr) minmax(20rem, 4fr); /* Two rows with different fractions and minimum percentage height */
+}
+
+@layer components {
+  .scroll-w-thin {
+    scrollbar-width: none;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

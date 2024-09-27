@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   GoogleMap,
   LoadScript,
@@ -8,12 +8,18 @@ import {
 } from "@react-google-maps/api";
 import { convertCoords } from "./utils/utils";
 import { useAllPoles } from "./utils/useAllPoles";
+import { useMap } from "./utils/context";
 
 const MapComponent = () => {
   const [records, loaded] = useAllPoles();
   const [selectedMarker, setSelectedMarker] = React.useState(null);
+  const {center, setCenter} = useMap();
 
-  // Ensure that useMemo depends on both 'loaded' and 'records'
+  // Function to navigate to specific coordinates
+
+
+  // Pass this function up to the parent component or through context
+
   const markers = useMemo(() => {
     if (!loaded) return [];
     return records.map((record) => ({
@@ -21,7 +27,6 @@ const MapComponent = () => {
       coordinates: convertCoords(record.Coordinates),
     }));
   }, [loaded, records]);
-  console.log(markers);
 
   const mapContainerStyle = {
     width: "100%",
@@ -31,38 +36,31 @@ const MapComponent = () => {
   const defaultCenter =
     markers.length > 0 ? markers[0].coordinates : { lat: 0, lng: 0 };
 
-  // Define your icon URLs here
-    // const icons = {
-  //   critical: "https://maps.google.com/mapfiles/ms/icons/red-dot.png", // Example critical icon
-  //   warning: "https://maps.google.com/mapfiles/ms/icons/yellow-dot.png", // Example warning icon
-  //   normal: "https://maps.google.com/mapfiles/ms/icons/green-dot.png", // Example normal icon
-  // };
-
+  // Initially set the center to the first marker if available
+  useEffect(() => {
+    if (markers.length > 0) {
+      setCenter(markers[0].coordinates);
+    }
+  }, [markers]);
 
   const icons = {
-    critical: "/icons/pole_red.png", // Example critical icon
-    warning: "/icons/pole_yellow.png", // Example warning icon
-    normal: "/icons/pole_green.png", // Example normal icon
+    critical: "/icons/pole_red.png",
+    warning: "/icons/pole_yellow.png",
+    normal: "/icons/pole_green.png",
   };
 
-  /**
-   * Function to determine the icon based on the record's properties.
-   * Adjust the logic based on your actual record structure.
-   */
   const getMarkerIcon = (record) => {
     if (record.critical) {
       return icons.critical;
     }
-    else {
-      return icons.normal;
-    }
+    return icons.normal;
   };
 
   return (
     <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_mapsapi}>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
-        center={defaultCenter}
+        center={center} // Use the dynamic center state
         zoom={8}
       >
         {markers.map((marker, index) => (
@@ -70,7 +68,7 @@ const MapComponent = () => {
             key={index}
             position={marker.coordinates}
             onClick={() => setSelectedMarker(marker)}
-            icon={getMarkerIcon(marker)} // Assign the icon based on the record
+            icon={getMarkerIcon(marker)}
           />
         ))}
 
@@ -83,10 +81,7 @@ const MapComponent = () => {
               <h4>Marker Details</h4>
               <p>Latitude: {selectedMarker.coordinates.lat}</p>
               <p>Longitude: {selectedMarker.coordinates.lng}</p>
-              {/* You can display more details from the record if needed */}
               <p>Critical: {selectedMarker.critical ? "Yes" : "No"}</p>
-              {/* Example for comment */}
-              {/* <p>Comment: {selectedMarker.comment}</p> */}
             </div>
           </InfoWindow>
         )}
