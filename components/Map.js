@@ -9,6 +9,7 @@ import {
 import { convertCoords } from "./utils/utils";
 import { useAllPoles } from "./utils/useAllPoles";
 import { useMap } from "./utils/context";
+import Loading from "@/app/loading";
 
 const MapComponent = () => {
   const [records, loaded] = useAllPoles();
@@ -57,6 +58,8 @@ const MapComponent = () => {
   };
 
   return (
+    <>
+    <Loading loading={!loaded} />
     <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_mapsapi}>
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
@@ -87,6 +90,7 @@ const MapComponent = () => {
         )}
       </GoogleMap>
     </LoadScript>
+    </>
   );
 };
 
